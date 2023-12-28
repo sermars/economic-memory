@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "Dart-Flutter",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	//"image": "mcr.microsoft.com/devcontainers/base:alpine-3.18"
+	"build": { 
+		"dockerfile": "Dockerfile",
+		"args": { 
+			"IMAGE_FROM": "dart:3.2.4-sdk",
+			"FLUTTER_VERSION": "flutter_linux_3.16.5-stable.tar.xz",
+		}
+	},
+	
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	//"forwardPorts": [3000],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+			"Dart-Code.dart-code",
+			"Dart-Code.flutter"
+			]
+		}
+	}
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
