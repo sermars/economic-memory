@@ -9,7 +9,8 @@
 		"args": { 
 			"IMAGE_FROM": "dart:3.2.4-sdk",
 			"FLUTTER_VERSION": "flutter_linux_3.16.5-stable.tar.xz"
-		}
+		},
+		"target": "base"
 	},
 	
 	// Features to add to the dev container. More info: https://containers.dev/features.
