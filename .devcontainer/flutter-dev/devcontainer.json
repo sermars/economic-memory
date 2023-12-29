@@ -8,7 +8,7 @@
 		"dockerfile": "Dockerfile",
 		"args": { 
 			"IMAGE_FROM": "dart:3.2.4-sdk",
-			"FLUTTER_VERSION": "flutter_linux_3.16.5-stable.tar.xz",
+			"FLUTTER_VERSION": "flutter_linux_3.16.5-stable.tar.xz"
 		}
 	},
 	
