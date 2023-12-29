@@ -37,18 +37,26 @@ RUN flutter config --no-analytics && \
     dart --disable-analytics && \
     flutter doctor -v
 
-# # -> Linux desktop dependencies (https://docs.flutter.dev/get-started/install/linux#linux-prerequisites)
-# RUN apt-get update && \
-#     apt-get install -y \
-#     clang \
-#     cmake \
-#     ninja-build \
-#     pkg-config \
-#     libgtk-3-dev \
-#     liblzma-dev \
-#     libstdc++-12-dev && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
+
+FROM base AS linux
+
+# -> Linux desktop dependencies (https://docs.flutter.dev/get-started/install/linux#linux-prerequisites)
+RUN apt-get update && \
+    apt-get install -y \
+    clang \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libgtk-3-dev \
+    liblzma-dev \
+    libstdc++-12-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# -> Flutter configuration
+RUN flutter config --no-analytics && \
+    dart --disable-analytics && \
+    flutter doctor -v
 
 # # -> Android SDK installation
 # RUN apt-get update && \
