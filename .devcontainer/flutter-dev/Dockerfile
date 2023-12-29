@@ -12,9 +12,10 @@ RUN apt-get update && \
     unzip \
     zip \
     which \
-    xz-utils && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    xz-utils 
+    #&& \
+    # apt-get clean && \
+    # rm -rf /var/lib/apt/lists/*
 
 # Install Flutter SDK
 ARG FLUTTER_VERSION
