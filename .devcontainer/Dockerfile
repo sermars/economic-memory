@@ -63,5 +63,3 @@ RUN flutter config --no-analytics && \
 # ENV PATH $PATH:/usr/lib/android-sdk/cmdline-tools/latest/bin
 # RUN sdkmanager --version
 # RUN sdkmanager --install "cmdline-tools;latest"
-
-

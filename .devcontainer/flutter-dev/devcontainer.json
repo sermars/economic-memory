@@ -5,7 +5,7 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	//"image": "mcr.microsoft.com/devcontainers/base:alpine-3.18"
 	"build": { 
-		"dockerfile": "Dockerfile",
+		"dockerfile": "../Dockerfile",
 		"args": { 
 			"IMAGE_FROM": "dart:3.2.4-sdk",
 			"FLUTTER_VERSION": "flutter_linux_3.16.5-stable.tar.xz"
