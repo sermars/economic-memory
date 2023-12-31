@@ -1,7 +1,18 @@
 ARG IMAGE_FROM
 FROM ${IMAGE_FROM} AS base
 
-# -> Flutter dependencies
+################################################################################
+#                          NON-ROOT USER CREATION                              #
+################################################################################
+ENV USER_NAME flutter-dev
+ENV USER_HOME /home/${USER_NAME}
+RUN adduser --disabled-password --gecos '' ${USER_NAME}
+
+################################################################################
+#                          FLUTTER DEPENDENCIES                                #
+################################################################################
+ARG JAVA_VERSION
+
 RUN apt-get update && \
     apt-get install -y \
     bash \
@@ -13,11 +24,19 @@ RUN apt-get update && \
     which \
     xz-utils && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # java installation (for android sdk)
+    mkdir -p /tmp/java/ && \
+    curl -o /tmp/java/${JAVA_VERSION} https://download.oracle.com/java/21/latest/${JAVA_VERSION} && \
+    apt install -y /tmp/java/${JAVA_VERSION} && \
+    rm -r /tmp/java/
 
-# -> Install Flutter SDK
+################################################################################
+#                        FLUTTER INSTALLATION SDK                              #
+################################################################################
 ARG FLUTTER_VERSION
 ENV FLUTTER_PATH /usr/local/flutter
+
 RUN curl https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${FLUTTER_VERSION} -o flutter.tar.xz && \
     tar xf flutter.tar.xz && \
     rm flutter.tar.xz && \
@@ -32,15 +51,43 @@ RUN curl https://storage.googleapis.com/flutter_infra_release/releases/stable/li
 # add flutter to PATH
 ENV PATH $PATH:${FLUTTER_PATH}/bin
 
-# -> Flutter configuration
-RUN flutter config --no-analytics && \
-    dart --disable-analytics && \
-    flutter doctor -v
+################################################################################
+#                       CHROME - DEVELOP FOR THE WEB                           #
+################################################################################
+RUN apt-get update && \
+    apt-get install -y \
+    # dependencies
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    wget \
+    xdg-utils \
+    libcairo2 \
+    libcups2 \
+    libgtk-4-1 \
+    libnss3 \
+    libpango-1.0-0 \
+    libu2f-udev \
+    libvulkan1 \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    # installation (develop for web)
+    curl -sSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o chrome.deb && \
+    apt-get install -y ./chrome.deb && \
+    rm chrome.deb
 
-
-FROM base AS linux
-
-# -> Linux desktop dependencies (https://docs.flutter.dev/get-started/install/linux#linux-prerequisites)
+################################################################################
+#                LINUX TOOLCHAIN - DEVELOP FOR LINUX DESKTOP                   #
+################################################################################
 RUN apt-get update && \
     apt-get install -y \
     clang \
@@ -53,21 +100,46 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# -> Flutter configuration
+################################################################################
+#              ANDROID TOOLCHAIN - DEVELOP FOR ANDROID DEVICES                 #
+################################################################################
+ARG ANDROID_COMMANNDLINE
+ARG ANDROID_PLATFORM_VERSION
+ARG ANDROID_BUILD_TOOLS_VERSION
+
+ENV ANDROID_HOME ${USER_HOME}/android-sdk-linux
+ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/cmdline-tools/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/emulator
+
+USER ${USER_NAME}
+WORKDIR ${USER_HOME}
+
+RUN curl -o android-sdk-tools.zip https://dl.google.com/android/repository/${ANDROID_COMMANNDLINE} && \
+    mkdir -p ${ANDROID_HOME}/ && \
+	unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}/cmdline-tools/ && \
+	rm android-sdk-tools.zip && \
+    # accept all licences
+	yes | sdkmanager --licenses && \
+	touch $HOME/.android/repositories.cfg && \
+    # update to lastest tools version
+    sdkmanager --verbose --update && \
+    # install NDK because gradle will never install by itself for project
+    sdkmanager --verbose ndk-bundle && \
+    # install platform and build tools
+	sdkmanager --install "cmdline-tools;latest" && \
+    sdkmanager "platform-tools" "emulator" "platforms;android-${ANDROID_PLATFORM_VERSION}" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+
+WORKDIR /
+################################################################################
+#                          FLUTTER CONFIGURATION                               #
+################################################################################
+# USER root
+# Change owner of Flutter SDK to all users
+RUN chmod -R a+rx /usr/local/flutter
+
 RUN flutter config --no-analytics && \
     dart --disable-analytics && \
+    flutter config --android-sdk "${ANDROID_HOME}" && \
+    yes | flutter doctor --android-licenses && \
     flutter doctor -v
 
-# # -> Android SDK installation
-# RUN apt-get update && \
-#     apt-get install -y \
-#     android-sdk && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
-# https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip?hl=es-419
-
-# RUN dpkg -L android-sdk
-# RUN ls -la /usr/lib
-# ENV PATH $PATH:/usr/lib/android-sdk/cmdline-tools/latest/bin
-# RUN sdkmanager --version
-# RUN sdkmanager --install "cmdline-tools;latest"
+# USER ${USER_NAME}
